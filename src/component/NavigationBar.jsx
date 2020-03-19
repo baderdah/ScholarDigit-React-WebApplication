@@ -16,6 +16,11 @@ const NavigationBar = ({ user }) => {
             </NavLink>
           </li>
           <li className="nav-item">
+            <NavLink className="nav-link" exact to="/profs">
+              Profs
+            </NavLink>
+          </li>
+          <li className="nav-item">
             <NavLink className="nav-link" exact to="/modules">
               Modules
             </NavLink>

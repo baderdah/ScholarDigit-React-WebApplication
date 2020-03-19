@@ -1,20 +1,15 @@
 import React, { Component } from "react";
-import DepartmentForm from "./DepartmentForm";
-import DepartmentsList from "./DepartmentsList";
-import * as moduleService from "../services/departmentsService";
-import * as departmentService from "../services/departmentsService";
+import ProfForm from "./ProfForm";
+import ProfsList from "./ProfsList";
+import * as profService from "../../services/profService";
+import * as departmentsService from "../../services/departmentsService";
 import Joi from "joi-browser";
-import Pagination from "../common/pagination";
-import { paginate } from "../utils/paginate";
-import DepartmentsTable from "./DepartmentsTable";
+import { paginate } from "../../utils/paginate";
 import _ from "lodash";
-import SearchBar from "../common/SearchBar";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Link } from "react-router-dom";
-import { tsTypeAssertion } from "@babel/types";
 
-class DepartmentBlock extends Component {
+class ProfBlock extends Component {
   constructor(props) {
     super(props);
 
@@ -22,8 +17,7 @@ class DepartmentBlock extends Component {
       // departmentForm
 
       update: false,
-
-      modules: [{}],
+      modules: [],
       selectedPage: 1,
       modulesPerPage: 4,
       selectedModule: [],
@@ -35,10 +29,24 @@ class DepartmentBlock extends Component {
       foundModules: [],
 
       // department List
-      data: { nom: "" },
+      data: { nom: "", prenom: "", email: "", matricule: "" },
       errors: {},
       options: []
     };
+  }
+
+  async populatingDepartments() {
+    const options = [];
+    const departments = await departmentsService.getModules();
+    for (let d of departments) {
+      options.push({
+        value: d.id,
+        label: d.nom
+      });
+    }
+    this.setState({
+      options
+    });
   }
 
   // department List
@@ -46,33 +54,46 @@ class DepartmentBlock extends Component {
   MapToServerModel = () => {
     return {
       id: this.state.data.id,
-      nom: this.state.data.nom
+      nom: this.state.data.nom,
+      prenom: this.state.data.prenom,
+      email: this.state.data.email,
+      matricule: this.state.data.matricule,
+      departement: {
+        id: this.state.data.departmentId
+      }
     };
   };
 
   async doSubmit(e) {
     //Call the server
     // e.preventDefault();
-    console.log("save", this.MapToServerModel());
-    const newDepartment = await departmentService.saveModule(
-      this.MapToServerModel()
-    );
-    console.log("newDep", newDepartment);
+    console.log("doSubmit");
+    const newProf = await profService.saveModule(this.MapToServerModel());
     if (this.state.update) {
-      console.log("test in", newDepartment);
-      const UpdatedDep = [
-        ...this.state.modules.filter(m => m.id !== newDepartment.id),
-        newDepartment
+      const UpdatedProf = [
+        ...this.state.modules.filter(m => m.id !== newProf.id),
+        newProf
       ];
       this.setState({
-        modules: UpdatedDep
+        modules: UpdatedProf
       });
-      toast.success("the Department is Updated susseccfuly");
+      toast.success("the Prof is Updated susseccfuly");
     } else {
-      console.log("test out", newDepartment);
+      console.log(newProf.data);
 
-      this.setState({ modules: [...this.state.modules, newDepartment.data] });
-      toast.success("the new Department is added susseccfuly");
+      const deplabelValue = this.state.options.filter(
+        o => o.value === newProf.data.departement.id
+      )[0];
+
+      console.log(deplabelValue);
+      newProf.data.departement = {
+        id: deplabelValue.value,
+        nom: deplabelValue.label
+      };
+      console.log("sub", newProf);
+      this.setState({ modules: [...this.state.modules, newProf.data] });
+
+      toast.success("the new Prof is added susseccfuly");
     }
     return false;
   }
@@ -87,7 +108,6 @@ class DepartmentBlock extends Component {
     result.error.details.forEach(item => {
       errors[item.path[0]] = item.message;
     });
-    console.log("propsUser", this.props.user);
     console.log("Validate form", errors);
     return errors;
   };
@@ -135,14 +155,35 @@ class DepartmentBlock extends Component {
       .min(4)
       .max(100)
       .required(),
-    id: Joi.number().min(0)
+    prenom: Joi.string()
+      .min(4)
+      .max(100)
+      .required(),
+    email: Joi.string()
+      .min(4)
+      .max(100)
+      .required(),
+    matricule: Joi.string()
+      .min(4)
+      .max(100)
+      .required(),
+    id: Joi.number().min(0),
+    departmentId: Joi.number()
   };
   // departmentForm
   async componentDidMount() {
-    const theModules = await moduleService.getModules();
-    console.log("test", theModules);
+    const theModules = await profService.getProfs();
+    await this.populatingDepartments();
+    console.log("comp Did Mount");
     this.setState({
-      modules: [...theModules]
+      modules: [...theModules],
+      data: {
+        nom: "",
+        prenom: "",
+        email: "",
+        matricule: "",
+        departmentId: this.state.options[0].value
+      }
     });
   }
 
@@ -154,27 +195,38 @@ class DepartmentBlock extends Component {
   };
 
   handelUpdate = moduleId => {
-    console.log("selected ", this.state.selectedModule);
     this.setState({ errors: {} });
     const selectedModule = [
       ...this.state.modules.filter(m => m.id === moduleId)
     ];
-    console.log("selected ", selectedModule);
+    console.log("Handel Update", selectedModule[0]);
 
-    this.setState({ data: selectedModule[0], update: true });
+    this.setState({
+      data: {
+        id: selectedModule[0].id,
+        nom: selectedModule[0].nom,
+        prenom: selectedModule[0].prenom,
+        email: selectedModule[0].email,
+        matricule: selectedModule[0].matricule,
+        departmentId: selectedModule[0].departement.id
+      },
+      update: true
+    });
   };
 
   handelDelete = async moduleId => {
+    console.log("handel delete ");
+
     const originalModules = this.state.modules;
 
     const modules = originalModules.filter(m => m.id !== moduleId);
     this.setState({ modules });
 
     try {
-      await moduleService.deleteModule(moduleId);
+      await profService.deleteModule(moduleId);
     } catch (ex) {
       if (ex.response && ex.response.status === 404) {
-        toast.error("this departement is already deleted");
+        toast.error("this module is already deleted");
       } else {
         this.setState({ modules: originalModules });
       }
@@ -182,14 +234,26 @@ class DepartmentBlock extends Component {
   };
 
   handelSort = sortColumn => {
+    console.log("Handel sort ");
+
     this.setState({
       sortColumn
     });
   };
 
   handelAddBtnClicked = () => {
-    console.log("add");
-    this.setState({ update: false });
+    console.log("Handel add ");
+
+    this.setState({
+      update: false,
+      data: {
+        nom: "",
+        prenom: "",
+        email: "",
+        matricule: "",
+        departmentId: this.state.options[0].value
+      }
+    });
   };
 
   moviesPaginationAndFiltering = () => {
@@ -218,6 +282,8 @@ class DepartmentBlock extends Component {
   };
 
   handelSearchChanged = ({ currentTarget: input }) => {
+    console.log("Handel SearchChanged");
+
     const modules = this.state.modules.filter(m =>
       m.nom.toLowerCase().startsWith(input.value.toLowerCase())
     );
@@ -228,10 +294,16 @@ class DepartmentBlock extends Component {
   };
 
   render() {
+    // if (this.state.modules.length !== 0) {
+    //   console.log("render", this.state.modules[0]);
+    //   const prof = { ...this.state.modules[0].prof };
+    //   console.log("render", this.state.modules[0].prof.nom);
+    // }
+
     return (
       <div className={"row"}>
         <div className={"col-4"}>
-          <DepartmentForm
+          <ProfForm
             update={this.state.update}
             data={this.state.data}
             errors={this.state.errors}
@@ -240,9 +312,10 @@ class DepartmentBlock extends Component {
             validateForm={this.validateForm}
             handelChange={this.handelChange}
             handelSubmit={this.SubmitHandler.bind(this)}
+            options={this.state.options}
           />
         </div>
-        <DepartmentsList
+        <ProfsList
           moviesPaginationAndFiltering={this.moviesPaginationAndFiltering}
           handelSearchChanged={this.handelSearchChanged}
           handelSort={this.handelSort}
@@ -262,4 +335,4 @@ class DepartmentBlock extends Component {
   }
 }
 
-export default DepartmentBlock;
+export default ProfBlock;

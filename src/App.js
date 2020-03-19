@@ -1,13 +1,18 @@
 import React from "react";
 import "./App.css";
-import { Route, Switch, Redirect } from "react-router-dom";
+import {
+  Route,
+  Switch
+  // Redirect
+} from "react-router-dom";
 import LoginForm from "./component/LoginForm";
 import auth from "./services/authService";
 import NavigationBar from "./component/NavigationBar";
 import Logout from "./common/Logout";
 import ModulesList from "./component/ModulesList";
-import DepartmentBlock from "./component/DepartmentBlock";
-import DepartmentForm from "./component/DepartmentForm";
+import DepartmentBlock from "./component/Departments/DepartmentBlock";
+import ModuleBlock from "./component/Modules/ModuleBlock";
+import ProfBlock from "./component/Profs/ProfBlock";
 import ProtectedRoute from "./common/ProtectedRoute";
 
 class App extends React.Component {
@@ -23,13 +28,19 @@ class App extends React.Component {
     return (
       <React.Fragment>
         <NavigationBar user={this.state.user} />
-        <main className="container mx-auto">
+        <main className="container-fluid mx-auto">
           <div className="mt-5">
             <Switch>
               <Route
+                path="/profs"
+                render={props => (
+                  <ProfBlock {...props} user={this.state.user} />
+                )}
+              />
+              <Route
                 path="/modules"
                 render={props => (
-                  <ModulesList {...props} user={this.state.user} />
+                  <ModuleBlock {...props} user={this.state.user} />
                 )}
               />
               <Route
@@ -37,10 +48,6 @@ class App extends React.Component {
                 render={props => (
                   <DepartmentBlock {...props} user={this.state.user} />
                 )}
-              />
-              <ProtectedRoute
-                path="/departments/:depratmentId"
-                component={DepartmentForm}
               />
               <Route path="/logout" component={Logout} />
               <Route path="/login" component={LoginForm} />

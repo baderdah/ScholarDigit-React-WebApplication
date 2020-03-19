@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import PropTypes, { object } from "prop-types";
-import Table from "../common/Table";
-import { Link } from "react-router-dom";
-import auth from "../services/authService";
+import Table from "../../common/Table";
+// import { Link } from "react-router-dom";
+// import auth from "../../services/authService";
 
 class DepartmentsTable extends Component {
   columns = [
@@ -38,7 +38,7 @@ class DepartmentsTable extends Component {
 
   constructor() {
     super();
-    const user = auth.getCurrentUser();
+    // const user = auth.getCurrentUser();
     // if (user && user.isAdmin) {
     this.columns.push(this.deleteColumn);
     this.columns.push(this.updateColumn);

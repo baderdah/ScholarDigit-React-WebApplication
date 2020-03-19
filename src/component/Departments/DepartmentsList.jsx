@@ -1,11 +1,11 @@
 import React, { Component } from "react";
-import Pagination from "../common/pagination";
+import Pagination from "../../common/pagination";
 import DepartmentsTable from "./DepartmentsTable";
-import _ from "lodash";
-import SearchBar from "../common/SearchBar";
-import { ToastContainer, toast } from "react-toastify";
+// import _ from "lodash";
+import SearchBar from "../../common/SearchBar";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 
 class DepartmentList extends Component {
   render() {
@@ -35,7 +35,6 @@ class DepartmentList extends Component {
 
     const { user } = this.props;
 
-    console.log("user", user);
     if (modulesCount === 0)
       return <h3>there are no departement in the database</h3>;
     else {

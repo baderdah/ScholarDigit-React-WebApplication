@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 
 const Table = props => {
   const { data, onSort, sortColumn, columns } = props;
+  console.log("Table Data ", data);
   return (
     <table className={"table"}>
       <TableHeader columns={columns} sortColumn={sortColumn} onSort={onSort} />

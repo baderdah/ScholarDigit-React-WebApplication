@@ -1,7 +1,7 @@
 import React from "react";
-import Joi from "joi-browser";
-import StatelessForm from "../common/StatelessForm";
-import * as departmentService from "../services/departmentsService";
+// import Joi from "joi-browser";
+import StatelessForm from "../../common/StatelessForm";
+// import * as departmentService from "../../services/departmentsService";
 class DepartmentForm extends StatelessForm {
   render() {
     const { handelSubmit, data, errors, options, update } = this.props;
